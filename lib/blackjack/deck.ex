@@ -1,5 +1,5 @@
 defmodule Blackjack.Deck do
-  # TODO: this has to be a genserver as well.
+  # TODO: this has to be a genserver as well. move that into a new module called DeckSupervisor
   # it needs to keep track of the state of the deck
   # TODO: Ace can be 1 or 10 depending on the total sum of hand
 

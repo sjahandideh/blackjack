@@ -34,4 +34,25 @@ defmodule Blackjack.PlayerTest do
     Player.change_hand(shamim, card)
     assert Player.next_move(shamim) == :stand
   end
+
+  test ".moves returns the history of moves performed" do
+    # begining
+    shamim = Player.start
+    assert Player.next_move(shamim) == :deal # at the start
+
+    # player gets a dealed hand with sum of 13 < 17
+    cards = [{"King", :Cubes}, {"3", :Hearts}]
+    Player.change_hand(shamim, cards)
+    assert Player.moves(shamim) == [:hit, :deal]
+
+    # player requests a hit with sum of 15
+    card = {"2", :Spades} 
+    Player.change_hand(shamim, card)
+    assert Player.moves(shamim) == [:hit, :hit, :deal]
+
+    # player requests a hit with sum of 20
+    card = {"5", :Spades} 
+    Player.change_hand(shamim, card)
+    assert Player.moves(shamim) == [:stand, :hit, :hit, :deal]
+  end
 end

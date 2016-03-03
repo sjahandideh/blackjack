@@ -20,33 +20,45 @@ defmodule Blackjack.Player do
     GenServer.call me, :next_move
   end
 
+  def moves(me) do
+    GenServer.call me, :moves
+  end
+
   ###
   # GenServer API
   # state = player's hand
   ###
 
   def init(_) do
-    hand = []
-    {:ok, hand}
+    state = %{hand: [], moves: []}
+    {:ok, state}
   end
 
-  def handle_call(:hand, _from, hand) do
-    {:reply, hand, hand}
+  def handle_call(:hand, _from, state) do
+    {:reply, state.hand, state}
   end
 
-  def handle_call(:next_move, _from, hand) do
+  def handle_call(:next_move, _from, state) do
+    hand = state.hand
     cond do
       hand == []              -> move = :deal
       (Deck.count(hand) < 17) -> move = :hit
       true                  -> move = :stand 
     end
-    {:reply, move, hand}
+    state = %{state | moves: [move | state.moves] }
+    {:reply, move, state}
   end
 
-  def handle_cast({:change_hand, card}, hand) when is_tuple(card) do
-    {:noreply, [card | hand]}
+  def handle_cast({:change_hand, card}, state) when is_tuple(card) do
+    state = %{state | hand: [card | state.hand] }
+    {:noreply, state}
   end
-  def handle_cast({:change_hand, cards}, hand) when is_list(cards) do
-    {:noreply, hand ++ cards}
+  def handle_cast({:change_hand, cards}, state) when is_list(cards) do
+    state = %{state | hand: (state.hand ++ cards)}
+    {:noreply, state}
+  end
+
+  def handle_call(:moves, _from, state) do
+    {:reply, state.moves, state}
   end
 end

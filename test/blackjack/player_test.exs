@@ -10,7 +10,7 @@ defmodule Blackjack.PlayerTest do
 
     # player gets a dealed hand
     hand = [{"King", :Cubes}, {"3", :Hearts}]
-    Player.change_hand(shamim, hand)
+    Player.update_hand(shamim, hand)
     assert Player.hand(shamim) == hand
   end
 
@@ -21,17 +21,17 @@ defmodule Blackjack.PlayerTest do
 
     # player gets a dealed hand with sum of 13 < 17
     cards = [{"King", :Cubes}, {"3", :Hearts}]
-    Player.change_hand(shamim, cards)
+    Player.update_hand(shamim, cards)
     assert Player.next_move(shamim) == :hit
 
     # player requests a hit with sum of 15
-    card = {"2", :Spades} 
-    Player.change_hand(shamim, card)
+    card = {"2", :Spades}
+    Player.update_hand(shamim, card)
     assert Player.next_move(shamim) == :hit
 
     # player requests a hit with sum of 20
-    card = {"5", :Spades} 
-    Player.change_hand(shamim, card)
+    card = {"5", :Spades}
+    Player.update_hand(shamim, card)
     assert Player.next_move(shamim) == :stand
   end
 
@@ -42,17 +42,18 @@ defmodule Blackjack.PlayerTest do
 
     # player gets a dealed hand with sum of 13 < 17
     cards = [{"King", :Cubes}, {"3", :Hearts}]
-    Player.change_hand(shamim, cards)
-    assert Player.moves(shamim) == [:hit, :deal]
+    Player.update_hand(shamim, cards)
+    assert Player.moves(shamim) == [:deal]
+    assert Player.next_move(shamim) == :hit
 
     # player requests a hit with sum of 15
-    card = {"2", :Spades} 
-    Player.change_hand(shamim, card)
-    assert Player.moves(shamim) == [:hit, :hit, :deal]
+    card = {"2", :Spades}
+    Player.update_hand(shamim, card)
+    assert Player.moves(shamim) == [:hit, :deal]
 
     # player requests a hit with sum of 20
-    card = {"5", :Spades} 
-    Player.change_hand(shamim, card)
-    assert Player.moves(shamim) == [:stand, :hit, :hit, :deal]
+    card = {"5", :Spades}
+    Player.update_hand(shamim, card)
+    assert Player.moves(shamim) == [:hit, :hit, :deal]
   end
 end

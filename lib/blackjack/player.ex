@@ -12,8 +12,8 @@ defmodule Blackjack.Player do
     GenServer.call me, :hand
   end
 
-  def change_hand(me, cards) do
-    GenServer.cast me, {:change_hand, cards}
+  def update_hand(me, cards) do
+    GenServer.cast me, {:update_hand, cards}
   end
 
   def next_move(me) do
@@ -26,11 +26,10 @@ defmodule Blackjack.Player do
 
   ###
   # GenServer API
-  # state = player's hand
   ###
 
   def init(_) do
-    state = %{hand: [], moves: []}
+    state = %{hand: [], moves: [:deal]}
     {:ok, state}
   end
 
@@ -38,27 +37,36 @@ defmodule Blackjack.Player do
     {:reply, state.hand, state}
   end
 
-  def handle_call(:next_move, _from, state) do
-    hand = state.hand
-    cond do
-      hand == []              -> move = :deal
-      (Deck.count(hand) < 17) -> move = :hit
-      true                  -> move = :stand 
+  defp update_moves(hand, moves) do
+    move = cond do
+      hand == []              -> :deal
+      (Deck.count(hand) < 17) -> :hit
+      true                    -> :stand
     end
-    state = %{state | moves: [move | state.moves] }
-    {:reply, move, state}
+    [move | moves]
   end
 
-  def handle_cast({:change_hand, card}, state) when is_tuple(card) do
-    state = %{state | hand: [card | state.hand] }
-    {:noreply, state}
+  def handle_call(:next_move, _from, state) do
+    next_move = List.first(state.moves)
+    {:reply, next_move, state}
   end
-  def handle_cast({:change_hand, cards}, state) when is_list(cards) do
-    state = %{state | hand: (state.hand ++ cards)}
+
+  def handle_cast({:update_hand, cards}, state) do
+    new_hand = cond do
+      is_list(cards) -> (state.hand ++ cards)
+      true           -> [cards | state.hand]
+    end
+    moves = update_moves(new_hand, state.moves)
+    state = %{
+      hand: new_hand,
+      moves: moves
+    }
+
     {:noreply, state}
   end
 
   def handle_call(:moves, _from, state) do
-    {:reply, state.moves, state}
+    [next_move | moves] = state.moves
+    {:reply, moves, state}
   end
 end
